@@ -21,17 +21,18 @@ module RailsClone
 
     desc 'change_name', 'Change app name'
     def change_name(from, name)
-      %w( app/views/layouts/application.html.erb
+      subs = {
+        [from.classify, name.classify] => %w( app/views/layouts/application.html.erb
           config/application.rb
-          app.json )
-      .each  do |file|
-        gsub_file(file, from.classify) {|match| name.classify }
-      end
+          app.json ),
+        [from.underscore, name.underscore] => %w( config/database.yml
+            config/initializers/session_store.rb )
+      }
 
-      %w( config/database.yml
-          config/initializers/session_store.rb )
-      .each  do |file|
-        gsub_file(file, from.camelize) {|match| name.camelize }
+      subs.each do |(from, name), files|
+        files.each  do |file|
+          gsub_file(file, from) {|match| name } if File.exist?(file)
+        end
       end
     end
   end
